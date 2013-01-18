@@ -1,4 +1,4 @@
-cache-layouts
+tree-layouts
 =============
 
-Indexing and memory layout routines for cache oblivious data structures
+Indexing and memory layout routines for cache oblivious binary trees
