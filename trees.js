@@ -1,17 +1,30 @@
+/**
+ * Routines for static binary search trees in JavaScript
+ *
+ * Author: Mikola Lysenko (c) 2013
+ */
 "use strict"; "use restrict";
 
 var bits = require("bit-twiddle");
 
+//In order memory layout of an array
 var inorder = {
   root:     function(n)     { return n>>>1; },
   begin:    function(n)     { return 0; },
   end:      function(n)     { return n; },
-  height:   function(x, n)  { return bits.countTrailingZeros(n); },
-  prev:     function(x, n)  { return n-1; },
-  next:     function(x, n)  { return n+1; },
-  parent:   function(x, n)  { },
-  left:     function(x, n)  { },
-  right:    function(x, n)  { }
+  height:   function(x, n)  { return bits.countTrailingZeros(~x); },
+  prev:     function(x, n)  { return x-1; },
+  next:     function(x, n)  { return x+1; },
+  parent:   function(x, n)  {
+    var h = bits.countTrailingZeros(~x);
+    return (x & ~(1<<(h+1)) )^(1<<h);
+  },
+  left:     function(x, n)  {
+    return x-(1<<(bits.countTrailingZeros(~x)-1));
+  },
+  right:    function(x, n)  {
+    return x+(1<<(bits.countTrailingZeros(~x)-1));
+  }
 };
 exports.inorder = inorder;
 
@@ -50,8 +63,8 @@ var veb = {
 };
 exports.veb = veb;
 
-function convert(array, from_layout, to_layout) {
-  var n       = array.length;
+function convert(from_layout, to_layout, array) {
+  var n       = array.length
     , result  = new Array(n)
     , x       = from_layout.begin(n)
     , y       = to_layout.begin(n);
@@ -63,8 +76,8 @@ function convert(array, from_layout, to_layout) {
 exports.convert = convert;
 
 
-function lowerBound(array, x, compare_func, layout) {
-  var n       = array.length;
+function lowerBound(layout, compare_func, array, x) {
+  var n       = array.length
     , v       = layout.root(n);
   while(layout.height(v, n) > 0) {
     var s = compare_func(array[v], x);
