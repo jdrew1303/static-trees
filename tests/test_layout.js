@@ -24,11 +24,14 @@ function testLayout(layout_str) {
       for(var i=0; i<n; ++i) {
         data[i] = Math.random();
       }
-      data.sort();
+      data.sort(COMPARE);
+      
+      console.log("data = ", data);
       
       //Convert to tree layout
       var tree = trees.convert(trees.inorder, layout, data);
       t.equal(tree.length, n);
+      console.log("tree = ", tree);
 
       //Check successor codes
       for(var i=0, j=layout.begin(n); i<n; ++i, j=layout.next(j, n)) {
@@ -43,22 +46,25 @@ function testLayout(layout_str) {
       //Check binary search
       var bsearch = trees.lowerBound.bind(null, layout, COMPARE, tree);
       for(var i=0; i<n; ++i) {
-        var lb = bsearch(data[i]);
+        var lb = bsearch(data[i] + 1e-8);
+        console.log(lb, data[i], tree[lb]);
         t.equal(tree[lb], data[i]);
       }
       
-      console.log(layout.root(n), layout.height(layout.root(n),n));
-      
       //Search against some random stuff
-      for(var i=0; i<1000; ++i) {
+      for(var i=0; i<10; ++i) {
         var rnd = Math.random() * 3 - 1
           , lb = bsearch(rnd);
-        console.log(rnd, lb);
-        if(n > 0) {
-          t.ok(tree[lb+1] <= rnd, "lower range: query=", rnd, ",idx=" + lb + ",tree[lb+1]=" + tree[lb+1]);
+       
+        if(lb < 0) {
+          t.ok(n === 0 || rnd < tree[layout.begin()]);
+          continue;
         }
-        if(lb >= 0) {
-          t.ok(rnd < tree[lb], "upper range: query=", rnd, ",idx=" + lb + ",tree[lb+1]=" + tree[lb+1]);
+        if(lb !== layout.end(n)) {
+          t.ok(rnd < tree[layout.next(lb)]);
+        }
+        if(lb !== layout.begin(n)) {
+          t.ok(tree[lb] <= rnd);
         }
       }
     } 
